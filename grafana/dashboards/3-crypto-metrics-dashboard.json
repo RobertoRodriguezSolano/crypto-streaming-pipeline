@@ -1,0 +1,949 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 4,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 200,
+      "title": "🏅 Market Ranking — Right Now",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": -2
+              },
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Market Cap (USD)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Price USD"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Volume 24h"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "24h Change %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Vol/MCap %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "#"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 172
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Market Cap (USD)"
+          }
+        ]
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (crypto_id)\n    crypto_id,\n    price_usd,\n    market_cap_usd,\n    volume_24h_usd,\n    change_24h_percent\n  FROM crypto_prices\n  ORDER BY crypto_id, timestamp DESC\n)\nSELECT\n  RANK() OVER (ORDER BY market_cap_usd DESC) AS \"#\",\n  UPPER(crypto_id)                            AS \"Crypto\",\n  price_usd                                   AS \"Price USD\",\n  change_24h_percent                          AS \"24h Change %\",\n  market_cap_usd                              AS \"Market Cap (USD)\",\n  volume_24h_usd                              AS \"Volume 24h\",\n  ROUND((volume_24h_usd / NULLIF(market_cap_usd, 0)) * 100, 2) AS \"Vol/MCap %\"\nFROM latest\nORDER BY market_cap_usd DESC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Market Ranking by Market Cap",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 201,
+      "title": "📊 Market Dominance — Bitcoin vs Altcoins",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 2,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH latest AS (\n  SELECT DISTINCT ON (crypto_id)\n    crypto_id,\n    market_cap_usd\n  FROM crypto_prices\n  ORDER BY crypto_id, timestamp DESC\n)\nSELECT\n  MAX(CASE WHEN crypto_id = 'bitcoin'                 THEN market_cap_usd END) AS \"Bitcoin\",\n  MAX(CASE WHEN crypto_id = 'ethereum'                THEN market_cap_usd END) AS \"Ethereum\",\n  MAX(CASE WHEN crypto_id = 'solana'                  THEN market_cap_usd END) AS \"Solana\",\n  MAX(CASE WHEN crypto_id = 'ripple'                  THEN market_cap_usd END) AS \"Ripple\",\n  MAX(CASE WHEN crypto_id = 'cardano'                 THEN market_cap_usd END) AS \"Cardano\",\n  MAX(CASE WHEN crypto_id = 'avalanche-2'             THEN market_cap_usd END) AS \"Avalanche\",\n  MAX(CASE WHEN crypto_id = 'dogecoin'                THEN market_cap_usd END) AS \"Dogecoin\",\n  MAX(CASE WHEN crypto_id = 'polkadot'                THEN market_cap_usd END) AS \"Polkadot\",\n  MAX(CASE WHEN crypto_id = 'chainlink'               THEN market_cap_usd END) AS \"Chainlink\",\n  MAX(CASE WHEN crypto_id = 'polygon-ecosystem-token' THEN market_cap_usd END) AS \"POL\"\nFROM latest",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Market Cap Dominance",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "USD",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  timestamp AS \"time\",\n  SUM(market_cap_usd) AS \"Total Market Cap\"\nFROM crypto_prices\nWHERE $__timeFilter(timestamp)\nGROUP BY timestamp\nORDER BY timestamp ASC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Total Market Cap Over Time",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 202,
+      "title": "🌊 Trading Volume 24h",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "USD",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  timestamp AS \"time\",\n  MAX(CASE WHEN crypto_id = 'bitcoin'     THEN volume_24h_usd END) AS \"Bitcoin\",\n  MAX(CASE WHEN crypto_id = 'ethereum'    THEN volume_24h_usd END) AS \"Ethereum\",\n  MAX(CASE WHEN crypto_id = 'ripple'      THEN volume_24h_usd END) AS \"Ripple\",\n  MAX(CASE WHEN crypto_id = 'solana'      THEN volume_24h_usd END) AS \"Solana\",\n  MAX(CASE WHEN crypto_id = 'dogecoin'    THEN volume_24h_usd END) AS \"Dogecoin\",\n  MAX(CASE WHEN crypto_id = 'avalanche-2' THEN volume_24h_usd END) AS \"Avalanche\"\nFROM crypto_prices\nWHERE $__timeFilter(timestamp)\nGROUP BY timestamp\nORDER BY timestamp ASC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Volume 24h Over Time",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 203,
+      "title": "📉 Volatility — Price Standard Deviation",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {},
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH price_stats AS (\n  SELECT\n    crypto_id,\n    AVG(price_usd)                                        AS avg_price,\n    STDDEV(price_usd)                                     AS stddev_price\n  FROM crypto_prices\n  WHERE timestamp >= NOW() - INTERVAL '24 hours'\n  GROUP BY crypto_id\n)\nSELECT\n  UPPER(crypto_id)                                        AS \"Crypto\",\n  ROUND((stddev_price / NULLIF(avg_price, 0)) * 100, 4)  AS \"Volatility (CV %)\"\nFROM price_stats\nORDER BY \"Volatility (CV %)\" DESC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Volatility — Coefficient of Variation last 24h",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "%",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH windowed AS (\n  SELECT\n    crypto_id,\n    timestamp,\n    price_usd,\n    STDDEV(price_usd) OVER (\n      PARTITION BY crypto_id\n      ORDER BY timestamp\n      ROWS BETWEEN 9 PRECEDING AND CURRENT ROW\n    ) AS rolling_stddev,\n    AVG(price_usd) OVER (\n      PARTITION BY crypto_id\n      ORDER BY timestamp\n      ROWS BETWEEN 9 PRECEDING AND CURRENT ROW\n    ) AS rolling_avg\n  FROM crypto_prices\n  WHERE $__timeFilter(timestamp)\n    AND crypto_id IN ('bitcoin', 'ethereum', 'solana', 'avalanche-2')\n)\nSELECT\n  timestamp AS \"time\",\n  MAX(CASE WHEN crypto_id = 'bitcoin'     THEN ROUND((rolling_stddev / NULLIF(rolling_avg,0))*100, 4) END) AS \"Bitcoin\",\n  MAX(CASE WHEN crypto_id = 'ethereum'    THEN ROUND((rolling_stddev / NULLIF(rolling_avg,0))*100, 4) END) AS \"Ethereum\",\n  MAX(CASE WHEN crypto_id = 'solana'      THEN ROUND((rolling_stddev / NULLIF(rolling_avg,0))*100, 4) END) AS \"Solana\",\n  MAX(CASE WHEN crypto_id = 'avalanche-2' THEN ROUND((rolling_stddev / NULLIF(rolling_avg,0))*100, 4) END) AS \"Avalanche\"\nFROM windowed\nGROUP BY timestamp\nORDER BY timestamp ASC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Rolling Volatility (10 samples) — Bitcoin / Ethereum / Solana / Avalanche",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "id": 204,
+      "title": "📐 Price Change Since Session Start",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": true,
+            "axisColorMode": "text",
+            "axisLabel": "%",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent"
+              },
+              {
+                "color": "transparent",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH first_price AS (\n  SELECT\n    crypto_id,\n    FIRST_VALUE(price_usd) OVER (\n      PARTITION BY crypto_id\n      ORDER BY timestamp ASC\n    ) AS first_price\n  FROM crypto_prices\n  WHERE $__timeFilter(timestamp)\n),\nbase AS (\n  SELECT DISTINCT ON (crypto_id) crypto_id, first_price FROM first_price\n)\nSELECT\n  cp.timestamp AS \"time\",\n  MAX(CASE WHEN cp.crypto_id = 'bitcoin'     THEN ROUND(((cp.price_usd - b.first_price) / NULLIF(b.first_price,0))*100, 4) END) AS \"Bitcoin\",\n  MAX(CASE WHEN cp.crypto_id = 'ethereum'    THEN ROUND(((cp.price_usd - b.first_price) / NULLIF(b.first_price,0))*100, 4) END) AS \"Ethereum\",\n  MAX(CASE WHEN cp.crypto_id = 'solana'      THEN ROUND(((cp.price_usd - b.first_price) / NULLIF(b.first_price,0))*100, 4) END) AS \"Solana\",\n  MAX(CASE WHEN cp.crypto_id = 'cardano'     THEN ROUND(((cp.price_usd - b.first_price) / NULLIF(b.first_price,0))*100, 4) END) AS \"Cardano\",\n  MAX(CASE WHEN cp.crypto_id = 'avalanche-2' THEN ROUND(((cp.price_usd - b.first_price) / NULLIF(b.first_price,0))*100, 4) END) AS \"Avalanche\",\n  MAX(CASE WHEN cp.crypto_id = 'ripple'      THEN ROUND(((cp.price_usd - b.first_price) / NULLIF(b.first_price,0))*100, 4) END) AS \"Ripple\"\nFROM crypto_prices cp\nJOIN base b ON cp.crypto_id = b.crypto_id\nWHERE $__timeFilter(cp.timestamp)\nGROUP BY cp.timestamp\nORDER BY cp.timestamp ASC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "% Change vs Session Start — All converge at 0% at start of time window",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": [
+    "crypto",
+    "metrics",
+    "analytics"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m"
+    ]
+  },
+  "timezone": "",
+  "title": "Crypto — Advanced Metrics",
+  "uid": "crypto-metrics-001",
+  "version": 3,
+  "weekStart": ""
+}

@@ -25,7 +25,7 @@
     {
       "datasource": {
         "type": "postgres",
-        "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
       },
       "fieldConfig": {
         "defaults": {
@@ -109,7 +109,7 @@
     {
       "datasource": {
         "type": "postgres",
-        "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
       },
       "fieldConfig": {
         "defaults": {
@@ -193,7 +193,7 @@
     {
       "datasource": {
         "type": "postgres",
-        "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
       },
       "fieldConfig": {
         "defaults": {
@@ -277,7 +277,7 @@
     {
       "datasource": {
         "type": "postgres",
-        "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
       },
       "fieldConfig": {
         "defaults": {
@@ -361,7 +361,7 @@
     {
       "datasource": {
         "type": "postgres",
-        "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
+        "uid": "a1354ff3-6bc3-4ef2-9541-2f9ccae7c8c4"
       },
       "fieldConfig": {
         "defaults": {
@@ -444,122 +444,14 @@
       ],
       "title": "Current Prices",
       "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 16
-      },
-      "id": 1,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "af307819-362b-411e-bb9e-3cbc7f2c8028"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT \r\n  timestamp AS time,\r\n  price_usd AS \"Bitcoin (USD)\"\r\nFROM crypto_prices\r\nWHERE crypto_id = 'bitcoin'\r\nORDER BY timestamp ASC",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Bitcoin Price (USD)",
-      "type": "timeseries"
     }
   ],
   "refresh": "10s",
   "schemaVersion": 38,
-  "tags": [],
+  "tags": [
+    "crypto",
+    "status"
+  ],
   "templating": {
     "list": []
   },
@@ -573,8 +465,8 @@
     ]
   },
   "timezone": "",
-  "title": "Crypto Real-Time Prices",
+  "title": "Crypto — Price Status",
   "uid": "a754d488-1f67-4e66-a2ed-374470a86283",
-  "version": 8,
+  "version": 6,
   "weekStart": ""
 }
