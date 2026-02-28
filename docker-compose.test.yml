@@ -1,0 +1,41 @@
+services:
+  # Test Producer
+  test-producer:
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+    container_name: test_producer
+    working_dir: /app
+    command: pytest tests/ -v --cov=producer --cov-report=term-missing
+    volumes:
+      - ./producer:/app
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_TOPIC: test_crypto_prices
+      API_INTERVAL_SECONDS: "30"
+      MAX_RETRIES: "10"
+      RETRY_INTERVAL: "5"
+
+  # Test Processor
+  test-processor:
+    build:
+      context: ./processor
+      dockerfile: Dockerfile
+    container_name: test_processor
+    working_dir: /app
+    command: pytest tests/ -v --cov=processor --cov-report=term-missing
+    volumes:
+      - ./processor:/app
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_TOPIC: test_crypto_prices
+      KAFKA_GROUP_ID: test_group
+      PG_HOST: localhost
+      PG_PORT: "5432"
+      PG_DATABASE: test_db
+      PG_USER: test_user
+      PG_PASSWORD: test_pass
+      BATCH_SIZE: "10"
+      BATCH_TIMEOUT_SECONDS: "5"
+      MAX_RETRIES: "10"
+      RETRY_INTERVAL: "2"

@@ -1,0 +1,290 @@
+================================================================================
+CONTEXTO DEL PROYECTO: CRYPTO STREAMING PIPELINE
+================================================================================
+Fecha: 2026-02-26
+Usuario: rrsaparicio
+Sistema Operativo: Windows (PowerShell)
+Entorno: Red corporativa (IHC Merwede Holding B.V)
+
+================================================================================
+DESCRIPCIÓN DEL PROYECTO
+================================================================================
+
+Pipeline de streaming en tiempo real para monitorear precios de criptomonedas.
+El sistema obtiene datos de la API de CoinGecko, los transmite a través de 
+Apache Kafka, los procesa y almacena en PostgreSQL, y los visualiza en Grafana.
+
+Arquitectura:
+CoinGecko API → Producer (Python) → Kafka → Processor (Python) → PostgreSQL → Grafana
+
+================================================================================
+TECNOLOGÍAS Y VERSIONES
+================================================================================
+
+- Python: 3.11 (imagen: mcr.microsoft.com/devcontainers/python:3.11)
+- Apache Kafka: Confluent 7.5.0
+- Zookeeper: Confluent 7.5.0
+- PostgreSQL: Bitnami (latest)
+- Grafana: OSS 10.2.0
+- Docker Desktop: 28.3.3
+- pytest: 7.4.3
+
+NOTA IMPORTANTE: La red corporativa bloquea Docker Hub y Maven Central.
+Se usaron imágenes alternativas:
+- Python: mcr.microsoft.com/devcontainers/python:3.11 (Microsoft Container Registry)
+- PostgreSQL: bitnami/postgresql:latest
+- Kafka/Zookeeper: confluentinc/cp-kafka:7.5.0 y confluentinc/cp-zookeeper:7.5.0
+- Grafana: grafana/grafana-oss:10.2.0
+
+NO SE PUDO USAR SPARK debido a bloqueos de red con Maven para descargar 
+dependencias de Kafka connector. Se implementó un processor Python puro como alternativa.
+
+================================================================================
+ESTRUCTURA DEL PROYECTO
+================================================================================
+
+crypto-streaming/
+├── .env                      # Variables de entorno (secretos)
+├── .env.example              # Plantilla de variables
+├── .gitignore                # Archivos ignorados por Git
+├── docker-compose.yml        # Compose principal
+├── docker-compose.test.yml   # Compose para tests
+├── README.md                 # Documentación principal
+├── CONTRIBUTING.md           # Guía de contribución
+├── LICENSE                   # Licencia MIT
+│
+├── init-db/
+│   └── 01-init.sql           # Script de inicialización PostgreSQL
+│
+├── producer/
+│   ├── Dockerfile
+│   ├── requirements.txt      # kafka-python, requests, pytest, pytest-cov, pytest-mock, responses
+│   ├── producer.py           # Código principal del productor
+│   └── tests/
+│       ├── __init__.py
+│       ├── conftest.py       # Fixtures de pytest
+│       └── test_producer.py  # 24 tests
+│
+└── processor/
+    ├── Dockerfile
+    ├── requirements.txt      # kafka-python, psycopg2-binary, pytest, pytest-cov, pytest-mock
+    ├── processor.py          # Código principal del procesador
+    └── tests/
+        ├── __init__.py
+        ├── conftest.py       # Fixtures de pytest
+        └── test_processor.py # 26 tests
+
+================================================================================
+CONFIGURACIÓN (.env)
+================================================================================
+
+# PostgreSQL Configuration
+POSTGRES_USER=crypto_user
+POSTGRES_PASSWORD=crypto_pass
+POSTGRES_DB=crypto_db
+POSTGRES_PORT=5432
+
+# Kafka Configuration
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+KAFKA_TOPIC=crypto_prices
+KAFKA_GROUP_ID=crypto_processor_group
+
+# Producer Configuration
+API_INTERVAL_SECONDS=30
+
+# Processor Configuration
+BATCH_SIZE=10
+BATCH_TIMEOUT_SECONDS=5
+
+# Grafana Configuration
+GRAFANA_ADMIN_USER=admin
+GRAFANA_ADMIN_PASSWORD=admin123
+
+================================================================================
+CRIPTOMONEDAS MONITOREADAS
+================================================================================
+
+- bitcoin
+- ethereum
+- cardano
+- solana
+- ripple
+- dogecoin
+- polkadot
+- avalanche-2
+- chainlink
+- polygon
+
+================================================================================
+COMANDOS PRINCIPALES
+================================================================================
+
+# Iniciar todos los servicios
+docker-compose up -d --build
+
+# Ver logs
+docker logs -f crypto_producer
+docker logs -f crypto_processor
+
+# Ver estado de contenedores
+docker-compose ps
+
+# Ejecutar tests del producer
+docker-compose -f docker-compose.test.yml run --rm test-producer
+
+# Ejecutar tests del processor
+docker-compose -f docker-compose.test.yml run --rm test-processor
+
+# Parar servicios
+docker-compose down
+
+# Parar y eliminar volúmenes (borra datos)
+docker-compose down -v
+
+# Consultar PostgreSQL
+docker exec -it postgres psql -U crypto_user -d crypto_db -c "SELECT * FROM crypto_prices ORDER BY timestamp DESC LIMIT 10;"
+
+# Ver mensajes en Kafka
+docker exec -it kafka kafka-console-consumer --bootstrap-server kafka:9092 --topic crypto_prices --from-beginning
+
+================================================================================
+ACCESO A SERVICIOS
+================================================================================
+
+- Grafana: http://localhost:3000 (admin / admin123)
+- PostgreSQL: localhost:5432 (crypto_user / crypto_pass / crypto_db)
+- Kafka: localhost:29092
+
+================================================================================
+ESQUEMA DE BASE DE DATOS
+================================================================================
+
+CREATE TABLE crypto_prices (
+    id SERIAL PRIMARY KEY,
+    crypto_id VARCHAR(50) NOT NULL,
+    timestamp TIMESTAMPTZ NOT NULL,
+    price_usd DECIMAL(20, 8),
+    price_eur DECIMAL(20, 8),
+    market_cap_usd DECIMAL(30, 2),
+    volume_24h_usd DECIMAL(30, 2),
+    change_24h_percent DECIMAL(10, 4),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices
+CREATE INDEX idx_crypto_prices_crypto_id ON crypto_prices(crypto_id);
+CREATE INDEX idx_crypto_prices_timestamp ON crypto_prices(timestamp DESC);
+CREATE INDEX idx_crypto_prices_crypto_timestamp ON crypto_prices(crypto_id, timestamp DESC);
+
+-- Vista para últimos precios
+CREATE VIEW latest_prices AS
+SELECT DISTINCT ON (crypto_id)
+    crypto_id, timestamp, price_usd, price_eur,
+    market_cap_usd, volume_24h_usd, change_24h_percent
+FROM crypto_prices
+ORDER BY crypto_id, timestamp DESC;
+
+================================================================================
+QUERIES DE GRAFANA
+================================================================================
+
+-- Precio Bitcoin en tiempo real
+SELECT 
+  timestamp AS time,
+  price_usd AS "Bitcoin (USD)"
+FROM crypto_prices
+WHERE crypto_id = 'bitcoin'
+  AND timestamp >= NOW() - INTERVAL '1 hour'
+ORDER BY timestamp ASC;
+
+-- Todos los precios
+SELECT 
+  timestamp AS time,
+  crypto_id AS metric,
+  price_usd AS value
+FROM crypto_prices
+WHERE timestamp >= NOW() - INTERVAL '1 hour'
+ORDER BY timestamp ASC;
+
+-- Tabla de precios actuales
+SELECT 
+  crypto_id AS "Crypto",
+  price_usd AS "Price USD",
+  price_eur AS "Price EUR",
+  change_24h_percent AS "24h %",
+  volume_24h_usd AS "Volume 24h",
+  timestamp AS "Last Update"
+FROM crypto_prices
+WHERE timestamp = (SELECT MAX(timestamp) FROM crypto_prices)
+ORDER BY price_usd DESC;
+
+-- Cambio 24h para gauge
+SELECT 
+  crypto_id AS metric,
+  change_24h_percent AS "24h Change %"
+FROM crypto_prices
+WHERE timestamp = (SELECT MAX(timestamp) FROM crypto_prices)
+ORDER BY change_24h_percent DESC;
+
+================================================================================
+ESTADO ACTUAL DEL PROYECTO
+================================================================================
+
+✅ Producer: Funcionando - obtiene datos de CoinGecko cada 30 segundos
+✅ Kafka: Funcionando - topic crypto_prices creado y recibiendo mensajes
+✅ Processor: Funcionando - consume de Kafka e inserta en PostgreSQL
+✅ PostgreSQL: Funcionando - tabla crypto_prices con datos
+✅ Grafana: Funcionando - dashboard de precios en tiempo real creado
+✅ Tests: 50 tests pasando (24 producer + 26 processor)
+✅ Documentación: README.md, CONTRIBUTING.md, LICENSE creados
+✅ Variables de entorno: .env configurado con secretos fuera del código
+
+================================================================================
+PROBLEMAS RESUELTOS DURANTE EL DESARROLLO
+================================================================================
+
+1. BLOQUEO DE DOCKER HUB (403 Forbidden)
+   - Causa: Red corporativa bloquea Docker Hub/Cloudflare
+   - Solución: Usar imágenes de Microsoft Container Registry (mcr.microsoft.com)
+
+2. BLOQUEO DE MAVEN (SSL Certificate Error)
+   - Causa: Red corporativa intercepta SSL
+   - Solución: Abandonar Spark, usar processor Python puro con kafka-python
+
+3. ERROR DE AUTENTICACIÓN POSTGRESQL
+   - Causa: Cambio de contraseña en .env con volumen existente
+   - Solución: Usar misma contraseña o hacer docker-compose down -v
+
+4. TESTS FALLANDO
+   - test_config_defaults: Leía variable de entorno del docker-compose.test.yml
+   - test_fetch_prices_timeout: API de responses cambió
+   - test_insert_batch_success: Mock incompleto de psycopg2
+   - Solución: Actualizar tests para no depender de valores hardcodeados
+
+================================================================================
+PRÓXIMOS PASOS SUGERIDOS
+================================================================================
+
+1. CI/CD con GitHub Actions para ejecutar tests automáticamente
+2. Añadir más criptomonedas
+3. Implementar alertas en Grafana (ej: Bitcoin sube/baja X%)
+4. Añadir métricas de Prometheus
+5. Implementar API REST para consultar datos
+6. Desplegar en cloud (AWS, GCP, Azure)
+
+================================================================================
+ARCHIVOS CLAVE COMPLETOS
+================================================================================
+
+Los archivos completos están en el historial del chat, incluyendo:
+- docker-compose.yml (121 líneas)
+- producer/producer.py (~230 líneas, con clases Config, CoinGeckoClient, DataTransformer, CryptoKafkaProducer)
+- processor/processor.py (~300 líneas, con clases Config, PostgresClient, CryptoKafkaConsumer, StreamProcessor)
+- init-db/01-init.sql
+- Todos los archivos de tests
+- README.md completo
+- CONTRIBUTING.md completo
+
+================================================================================
+FIN DEL CONTEXTO
+================================================================================
