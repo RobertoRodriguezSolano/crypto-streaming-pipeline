@@ -139,11 +139,11 @@ GRAFANA_ADMIN_PASSWORD=admin123
 # Producer tests (22 tests)
 docker-compose -f docker-compose.test.yml run --rm test-producer
 
-# Processor tests (26 tests - includes manual commit guarantee tests)
+# Processor tests (26 tests)
 docker-compose -f docker-compose.test.yml run --rm test-processor
 ```
 
-The test suite covers the critical path of the at-least-once delivery guarantee — specifically that the Kafka offset commit does not happen when a database insert fails:
+The test suite covers the critical path of the at-least-once delivery guarantee, specifically that the Kafka offset commit does not happen when a database insert fails:
 
 ```
 test_flush_batch_commits_kafka_after_successful_insert   PASSED
@@ -155,7 +155,7 @@ test_flush_batch_does_not_commit_kafka_on_db_failure     PASSED
 | Producer | 22 | ~65% |
 | Processor | 26 | 72% |
 
-The uncovered lines are the `while True` main loop and startup banner — intentionally untested.
+The uncovered lines are the `while True` main loop and startup banner.
 
 ## Grafana setup
 
@@ -173,7 +173,7 @@ Navigate to **Connections → Data sources → Add data source → PostgreSQL** 
 | Password | `crypto_pass` |
 | TLS/SSL Mode | `disable` |
 
-Click **Save & Test** — it should return "Database Connection OK".
+Click **Save & Test**, it should return "Database Connection OK".
 
 ### 2. Import the dashboards
 
@@ -199,11 +199,11 @@ Individual price chart per cryptocurrency, each with its own Y-axis scale so Dog
 
 ### Dashboard 3 — Advanced Metrics
 
-- Market ranking table with Vol/MCap ratio (volume as a percentage of market cap — high values signal unusual trading activity)
+- Market ranking table with Vol/MCap ratio (volume as a percentage of market cap. High values signal unusual trading activity)
 - Market cap dominance donut showing Bitcoin vs altcoins share
 - Total market cap over time
 - 24h trading volume over time per coin
-- Volatility ranking using coefficient of variation — normalizes by price so coins at different scales are directly comparable
+- Volatility ranking using coefficient of variation. Normalizes by price so coins at different scales are directly comparable
 - Rolling volatility with a 10-sample sliding window to see volatility evolving over time
 - Relative performance chart showing % change from the start of the selected time window
 
@@ -267,7 +267,7 @@ docker-compose down -v
 ## Troubleshooting
 
 **`NoBrokersAvailable` on producer/processor startup**
-Kafka takes ~30 seconds to be ready. Both services retry automatically — check `docker-compose ps` and wait until Kafka shows `healthy`.
+Kafka takes ~30 seconds to be ready. Both services retry automatically, check `docker-compose ps` and wait until Kafka shows `healthy`.
 
 **No data for a cryptocurrency**
 CoinGecko IDs are not always the coin symbol or common name. For example, Polygon's token is `polygon-ecosystem-token`, not `polygon` or `matic-network` (MATIC was migrated to POL in September 2024). Verify IDs at `https://api.coingecko.com/api/v3/coins/list`.
@@ -279,4 +279,4 @@ The `-v` flag removes named volumes including `postgres_data`. Always use `docke
 
 MIT License
 
-Copyright (c) 2026 Roberto Rodriguez Solano
+Copyright (c) 2026 Roberto Rodriguez - Solano Aparicio
