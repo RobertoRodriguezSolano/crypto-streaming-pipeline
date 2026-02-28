@@ -157,18 +157,48 @@ test_flush_batch_does_not_commit_kafka_on_db_failure     PASSED
 
 The uncovered lines are the `while True` main loop and startup banner — intentionally untested.
 
-## Dashboards
+## Grafana setup
 
-**Dashboard 1 — Current Prices**: stat panels with the latest price per coin and a full comparison table.
+### 1. Configure the data source
 
-**Dashboard 2 — Price Timeline**: individual price chart per cryptocurrency (each with its own scale, so Dogecoin at $0.09 is as readable as Bitcoin at $64K), plus a normalized view where all coins start at 0% to compare relative performance regardless of absolute price.
+Go to `http://localhost:3000` and log in with `admin / admin123`.
+
+Navigate to **Connections → Data sources → Add data source → PostgreSQL** and fill in:
+
+| Field | Value |
+|-------|-------|
+| Host | `postgres:5432` |
+| Database | `crypto_db` |
+| User | `crypto_user` |
+| Password | `crypto_pass` |
+| TLS/SSL Mode | `disable` |
+
+Click **Save & Test** — it should return "Database Connection OK".
+
+### 2. Import the dashboards
+
+The three dashboard JSON files are in `grafana/dashboards/`. Import each one via **Dashboards → New → Import → Upload JSON file**.
+
+| File | Dashboard |
+|------|-----------|
+| `dashboard-1-current-prices.json` | Current prices stat panels and comparison table |
+| `dashboard-2-timeline.json` | Price history per cryptocurrency |
+| `dashboard-3-metrics.json` | Advanced metrics and analytics |
+
+### Dashboard contents
+
+**Dashboard 1 — Current Prices**: stat panels showing the latest price for Bitcoin, Ethereum, Solana, and Dogecoin, plus a full table comparing all 10 cryptocurrencies by price, 24h change, volume, and market cap.
+
+**Dashboard 2 — Price Timeline**: individual price chart per cryptocurrency, each with its own Y-axis scale so Dogecoin at $0.09 is as readable as Bitcoin at $64K. Also includes a normalized view where all coins start at 0% to compare relative performance regardless of absolute price, and a 24h change % panel for all coins on a shared axis centered at zero.
 
 **Dashboard 3 — Advanced Metrics**:
-- Market ranking by market cap with Vol/MCap ratio
-- Market cap dominance donut (Bitcoin vs altcoins)
-- 24h volatility using coefficient of variation (comparable across coins of different price scales)
-- Rolling volatility with a 10-sample sliding window
-- Relative performance chart from start of selected time window
+- Market ranking table with Vol/MCap ratio (volume as a percentage of market cap — high values signal unusual trading activity)
+- Market cap dominance donut showing Bitcoin vs altcoins share
+- Total market cap over time
+- 24h trading volume over time per coin
+- Volatility ranking using coefficient of variation — normalizes by price so coins at different scales are directly comparable
+- Rolling volatility with a 10-sample sliding window to see volatility evolving over time
+- Relative performance chart showing % change from the start of the selected time window
 
 ## Project structure
 
@@ -225,6 +255,14 @@ docker-compose down -v
 ```
 
 ## Troubleshooting
+
+**Producer crashes on startup with `TypeError: int() argument must be a string`**
+The `.env` file is missing `MAX_RETRIES` or `RETRY_INTERVAL`. Add them:
+```env
+MAX_RETRIES=10
+RETRY_INTERVAL=5
+```
+And add both to the `producer` environment block in `docker-compose.yml`.
 
 **`NoBrokersAvailable` on producer/processor startup**
 Kafka takes ~30 seconds to be ready. Both services retry automatically — check `docker-compose ps` and wait until Kafka shows `healthy`.
