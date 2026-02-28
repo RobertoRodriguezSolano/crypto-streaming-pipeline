@@ -83,7 +83,7 @@ self.kafka_consumer.commit()                          # 2. Kafka advances offset
 ```bash
 # 1. Clone
 git clone https://github.com/RobertoRodriguezSolano/crypto-streaming-pipeline.git
-cd crypto-streaming
+cd crypto-streaming-pipeline
 
 # 2. Configure environment
 cp .env.example .env
@@ -181,17 +181,24 @@ The three dashboard JSON files are in `grafana/dashboards/`. Import each one via
 
 | File | Dashboard |
 |------|-----------|
-| `dashboard-1-current-prices.json` | Current prices stat panels and comparison table |
-| `dashboard-2-timeline.json` | Price history per cryptocurrency |
-| `dashboard-3-metrics.json` | Advanced metrics and analytics |
+| `1-crypto-status-dasboard.json` | Current prices stat panels and comparison table |
+| `2-crypto-timeline-dashboard.json` | Price history per cryptocurrency |
+| `3-crypto-metrics-dashboard.json` | Advanced metrics and analytics |
 
-### Dashboard contents
+### Dashboard 1 — Current Prices
 
-**Dashboard 1 — Current Prices**: stat panels showing the latest price for Bitcoin, Ethereum, Solana, and Dogecoin, plus a full table comparing all 10 cryptocurrencies by price, 24h change, volume, and market cap.
+Stat panels showing the latest price for Bitcoin, Ethereum, Solana, and Dogecoin, plus a full table comparing all 10 cryptocurrencies by price, 24h change, volume, and market cap.
 
-**Dashboard 2 — Price Timeline**: individual price chart per cryptocurrency, each with its own Y-axis scale so Dogecoin at $0.09 is as readable as Bitcoin at $64K. Also includes a normalized view where all coins start at 0% to compare relative performance regardless of absolute price, and a 24h change % panel for all coins on a shared axis centered at zero.
+![Dashboard 1 - Current Prices](grafana/screenshots/screenshot-dashboard-1.png)
 
-**Dashboard 3 — Advanced Metrics**:
+### Dashboard 2 — Price Timeline
+
+Individual price chart per cryptocurrency, each with its own Y-axis scale so Dogecoin at $0.09 is as readable as Bitcoin at $64K. Also includes a normalized view where all coins start at 0% to compare relative performance regardless of absolute price, and a 24h change % panel for all coins on a shared axis centered at zero.
+
+![Dashboard 2 - Price Timeline](grafana/screenshots/screenshot-dashboard-2.png)
+
+### Dashboard 3 — Advanced Metrics
+
 - Market ranking table with Vol/MCap ratio (volume as a percentage of market cap — high values signal unusual trading activity)
 - Market cap dominance donut showing Bitcoin vs altcoins share
 - Total market cap over time
@@ -199,6 +206,8 @@ The three dashboard JSON files are in `grafana/dashboards/`. Import each one via
 - Volatility ranking using coefficient of variation — normalizes by price so coins at different scales are directly comparable
 - Rolling volatility with a 10-sample sliding window to see volatility evolving over time
 - Relative performance chart showing % change from the start of the selected time window
+
+![Dashboard 3 - Advanced Metrics](grafana/screenshots/screenshot-dashboard-3.png)
 
 ## Project structure
 
@@ -226,6 +235,7 @@ crypto-streaming/
 │       └── test_processor.py
 └── grafana/
     ├── dashboards/
+    ├── screenshots/
     └── provisioning/
 ```
 
@@ -256,7 +266,6 @@ docker-compose down -v
 
 ## Troubleshooting
 
-
 **`NoBrokersAvailable` on producer/processor startup**
 Kafka takes ~30 seconds to be ready. Both services retry automatically — check `docker-compose ps` and wait until Kafka shows `healthy`.
 
@@ -270,4 +279,4 @@ The `-v` flag removes named volumes including `postgres_data`. Always use `docke
 
 MIT License
 
-Copyright (c) 2026 Roberto Rodriguez - Solano Aparicio
+Copyright (c) 2026 Roberto Rodriguez Solano
