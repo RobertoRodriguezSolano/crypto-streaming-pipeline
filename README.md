@@ -82,7 +82,7 @@ self.kafka_consumer.commit()                          # 2. Kafka advances offset
 
 ```bash
 # 1. Clone
-git clone https://github.com/yourusername/crypto-streaming.git
+git clone https://github.com/RobertoRodriguezSolano/crypto-streaming-pipeline.git
 cd crypto-streaming
 
 # 2. Configure environment
