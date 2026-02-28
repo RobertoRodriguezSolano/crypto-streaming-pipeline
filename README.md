@@ -209,7 +209,7 @@ crypto-streaming/
 ├── docker-compose.yml
 ├── docker-compose.test.yml
 ├── init-db/
-│   └── 01-init.sql            # Schema + indexes + latest_prices view
+│   └── 01-init.sql
 ├── producer/
 │   ├── Dockerfile
 │   ├── requirements.txt
@@ -256,13 +256,6 @@ docker-compose down -v
 
 ## Troubleshooting
 
-**Producer crashes on startup with `TypeError: int() argument must be a string`**
-The `.env` file is missing `MAX_RETRIES` or `RETRY_INTERVAL`. Add them:
-```env
-MAX_RETRIES=10
-RETRY_INTERVAL=5
-```
-And add both to the `producer` environment block in `docker-compose.yml`.
 
 **`NoBrokersAvailable` on producer/processor startup**
 Kafka takes ~30 seconds to be ready. Both services retry automatically — check `docker-compose ps` and wait until Kafka shows `healthy`.
@@ -275,4 +268,6 @@ The `-v` flag removes named volumes including `postgres_data`. Always use `docke
 
 ## License
 
-MIT
+MIT License
+
+Copyright (c) 2026 Roberto Rodriguez - Solano Aparicio
