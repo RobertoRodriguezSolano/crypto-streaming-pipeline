@@ -187,7 +187,7 @@ The three dashboard JSON files are in `grafana/dashboards/`. Import each one via
 
 ### Dashboard 1 — Current Prices
 
-Stat panels showing the latest price for Bitcoin, Ethereum, Solana, and Dogecoin, plus a full table comparing all 10 cryptocurrencies by price, 24h change, volume, and market cap.
+Stat panels showing the latest price for Bitcoin, Ethereum, Solana, and Dogecoin, plus a full table comparing all 10 cryptocurrencies by price, 24h change and volume.
 
 ![Dashboard 1 - Current Prices](grafana/screenshots/screenshot-dashboard-1.png)
 
